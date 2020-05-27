@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const combineOriginalAndKana = require("./combineOriginalAndKana");
+const { combineOriginalAndKana } = require("./combineOriginalAndKana");
 
 const testCases = [
   ["わせる", "わせる", [["わせる", "わせる"]]],
@@ -75,7 +75,7 @@ describe("combineOriginalAndKana()", () => {
     });
   });
 
-  describe("not working as expected", () => {
+  describe("not working as expected (unsupported cases)", () => {
     failingCases.forEach(([inputOriginal, inputKana, expectedResult]) => {
       expectKanaExtractFail(inputOriginal, inputKana, expectedResult);
     });

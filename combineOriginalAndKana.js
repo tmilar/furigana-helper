@@ -1,70 +1,79 @@
-function isKanji(char) {
-  // all kanji in the basic unicode plane
-  // regex source: https://github.com/Pomax/node-jp-conversion/blob/master/index.js#L453
-  const kanjiRange = /[\u3300-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
-  return kanjiRange.test(char);
-}
-
 /**
- * @param aOriginal {string}
- * @param aKana {string}
+ * Combine any JP string input with it's corresponding -kana transcription, to groups of original-kana pairs
+ * useful for kanji-only furigana readability.
+ *
+ * @param aOriginal {string} - original JP string comprised of kanji / hiragana / katakana symbols
+ * @param aKana {string} - corresponding JP string in hiragana / katakana symbols only
+ * @return combinedGroups [] - array of string pairs of original-to-kana combinations.
  */
-module.exports = function combineOriginalAndKana(aOriginal, aKana) {
+function combineOriginalAndKana(aOriginal, aKana) {
   let i = 0;
   let j = 0;
   const originalLen = aOriginal.length;
   const kanaLen = aKana.length;
 
-  const result = [];
+  const combinedGroups = [];
 
-  // while: not finished orig, not finished kana, OR next is last kana and not any result yet.
+  // while: not finished orig AND next kanas available, OR next kana is tbe last one and not any result yet.
   while (
     (i < originalLen && j + 1 < kanaLen) ||
-    (j + 1 === kanaLen && result.length === 0)
+    (j + 1 === kanaLen && combinedGroups.length === 0)
   ) {
     // start a new group
     let originals = "";
     let kanas = "";
 
-    if (isKanji(aOriginal[i])) {
+    if (_isKanji(aOriginal[i])) {
       originals += aOriginal[i];
       kanas += aKana[j];
 
-      // grab next kanas until the kana matches next orig char (or no more kana left)
+      // grab next kanas, until the next kana matches the next orig char (or no more kana left)
       while (j + 1 < kanaLen && aOriginal[i + 1] !== aKana[j + 1]) {
         kanas += aKana[j + 1];
         j++;
       }
 
       // grab next contiguous kanjis
-      while (i + 1 < originalLen && isKanji(aOriginal[i + 1])) {
+      while (i + 1 < originalLen && _isKanji(aOriginal[i + 1])) {
         originals += aOriginal[i + 1];
         i++;
       }
 
-      // now next chars are both equal => we start a new group.
+      // now, next chars are not kanji, and both equal => advance indexes and start a new group.
       i++;
-      j++; // advance kanas index
+      j++;
     } else {
-      // current chars {i,j} are equal, add original + kanas to group until the next chars differ (or no more kana left).
-      originals += aOriginal[i];
-      kanas += aOriginal[i];
+      // current orig is not kanji
+      // grab origs & kanas, until a kanji appears (or no more next chars)
+      while (j < kanaLen && !_isKanji(aOriginal[i])) {
+        originals += aOriginal[i];
+        kanas += aOriginal[i];
 
-      // grab origs + kanas, until next chars don't match (or no more next chars)
-      while (j + 1 < kanaLen && !isKanji(aOriginal[i + 1])) {
-        originals += aOriginal[i + 1];
-        kanas += aOriginal[i + 1];
-
-        // kanas.push(aKana[j + 1]);
         i++; // advance originals index
         j++; // advance kanas index
       }
-
-      i++; // advance originals index
-      j++; // advance kanas index
     }
-    result.push([originals.trim(), kanas.trim()]);
+
+    combinedGroups.push([originals.trim(), kanas.trim()]);
   }
 
-  return result;
+  return combinedGroups;
+}
+
+/**
+ * Util method to detect if string is kanji only
+ *
+ * @param char {string}
+ * @return {boolean}
+ * @private
+ */
+function _isKanji(char) {
+  // all kanji in the basic unicode plane
+  // regex source: https://github.com/Pomax/node-jp-conversion/blob/master/index.js#L453
+  const kanjiRange = /[\u3300-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
+  return kanjiRange.test(char);
+}
+
+module.exports = {
+  combineOriginalAndKana,
 };
