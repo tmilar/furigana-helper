@@ -1,18 +1,27 @@
 {
-  "name": "furigana",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@tmilar/furigana-helper",
+  "version": "0.0.1",
+  "description": "Lib to support Kanji-only furigana extractions from a pair of a JP string & its base -kana string.",
   "main": "combineOriginalAndKana.js",
   "scripts": {
     "test": "mocha combineOriginalAndKana.test.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "chai": "^4.2.0",
     "debug": "^4.1.1",
     "mocha": "^7.2.0",
     "prettier": "^2.0.5"
-  }
+  },
+  "keywords": ["kanji", "furigana", "hiragana", "katakana"],
+  "author": "Tomás Milar <tomasmilar4@gmail.com> (http://github.com/tmilar/)",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/tmilar/furigana-helper.git"
+  },
+  "license": "MIT",
+  "private": false,
+  "files": [
+    "combineOriginalAndKana.js",
+    "combineOriginalAndKana.test.js"
+  ]
 }
