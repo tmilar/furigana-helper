@@ -1,5 +1,8 @@
 const { expect } = require("chai");
+const debug = require("debug");
 const { combineOriginalAndKana } = require("./combineOriginalAndKana");
+
+const log = debug("test:lib:combineOriginalAndKana");
 
 const testCases = [
   ["わせる", "わせる", [["わせる", "わせる"]]],
@@ -92,10 +95,7 @@ describe("combineOriginalAndKana()", () => {
     const result = combineOriginalAndKana(inputOriginal, inputKana);
 
     it(`input original: ${inputOriginal} kana: ${inputKana} -> extracts ${expectedResult.length} group(s)`, () => {
-      console.log(
-        `${inputOriginal}, ${inputKana} -> combined result: `,
-        result
-      );
+      log(`${inputOriginal}, ${inputKana} -> combined result: `, result);
       expect(result).to.eql(expectedResult);
     });
   }
@@ -110,10 +110,7 @@ describe("combineOriginalAndKana()", () => {
     const result = combineOriginalAndKana(inputOriginal, inputKana);
 
     it(`input original: ${inputOriginal} kana: ${inputKana} -> unexpected extraction`, () => {
-      console.log(
-        `${inputOriginal}, ${inputKana} -> combined result: `,
-        result
-      );
+      log(`${inputOriginal}, ${inputKana} -> combined result: `, result);
       expect(result).to.not.eql(expectedResult);
     });
   }
