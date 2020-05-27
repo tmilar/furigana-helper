@@ -1,15 +1,10 @@
-// const inputOriginal = "間に合わせる";
-// const inputKana = "まにあわせる";
-// const expectedResult = [
-//   ["間", "ま"],
-//   ["に", "に"],
-//   ["合", "あ"],
-//   ["わせる", "わせる"],
-// ];
+function isKanji(char) {
+  // all kanji in the basic unicode plane
+  // regex source: https://github.com/Pomax/node-jp-conversion/blob/master/index.js#L453
+  const kanjiRange = /[\u3300-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
+  return kanjiRange.test(char);
+}
 
-// test1: ["わせる", "わせる", [["わせる", "わせる"]]
-// test2: ["合", "あ", [["合", "あ"]]
-// test3: ["合わせる", "あわせる", [["合", "あ"], ["わせる", "わせる"]]
 /**
  * @param aOriginal {string}
  * @param aKana {string}
@@ -23,59 +18,53 @@ module.exports = function combineOriginalAndKana(aOriginal, aKana) {
   const result = [];
 
   // while: not finished orig, not finished kana, OR next is last kana and not any result yet.
-  while ((i+1) < originalLen && (j+1) < kanaLen || (j + 1 === kanaLen && result.length === 0)) {
+  while (
+    (i < originalLen && j + 1 < kanaLen) ||
+    (j + 1 === kanaLen && result.length === 0)
+  ) {
     // start a new group
-    const group = [[aOriginal[i]], [aKana[j]]];
+    let originals = "";
+    let kanas = "";
 
-    // if current chars {i,j} are different, add kanas to pair original char until the next chars become equal.
-    if (aOriginal[i] !== aKana[j]) {
-      const kanas = group[1];
+    if (isKanji(aOriginal[i])) {
+      originals += aOriginal[i];
+      kanas += aKana[j];
 
       // grab next kanas until the kana matches next orig char (or no more kana left)
       while (j + 1 < kanaLen && aOriginal[i + 1] !== aKana[j + 1]) {
-        kanas.push(aKana[j + 1]);
-        j++; // advance kanas index
+        kanas += aKana[j + 1];
+        j++;
+      }
+
+      // grab next contiguous kanjis
+      while (i + 1 < originalLen && isKanji(aOriginal[i + 1])) {
+        originals += aOriginal[i + 1];
+        i++;
       }
 
       // now next chars are both equal => we start a new group.
       i++;
       j++; // advance kanas index
-      debugger;
     } else {
       // current chars {i,j} are equal, add original + kanas to group until the next chars differ (or no more kana left).
-      const [originals, kanas] = group;
+      originals += aOriginal[i];
+      kanas += aOriginal[i];
 
       // grab origs + kanas, until next chars don't match (or no more next chars)
-      while (j + 1 < kanaLen && aOriginal[i + 1] === aKana[j + 1]) {
-        originals.push(aOriginal[i + 1]);
-        kanas.push(aKana[j + 1]);
+      while (j + 1 < kanaLen && !isKanji(aOriginal[i + 1])) {
+        originals += aOriginal[i + 1];
+        kanas += aOriginal[i + 1];
+
+        // kanas.push(aKana[j + 1]);
         i++; // advance originals index
         j++; // advance kanas index
       }
 
       i++; // advance originals index
       j++; // advance kanas index
-      debugger;
     }
-    result.push([group[0].join(""), group[1].join("")]);
-
-    // if (j + 1 === kanaLen) {
-    //   break;
-    // }
+    result.push([originals.trim(), kanas.trim()]);
   }
 
   return result;
 };
-
-const testCases = [
-  ["わせる", "わせる", [["わせる", "わせる"]]],
-  ["合", "あ", [["合", "あ"]]],
-  [
-    "合わせる",
-    "あわせる",
-    [
-      ["合", "あ"],
-      ["わせる", "わせる"],
-    ],
-  ],
-];
